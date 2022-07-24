@@ -3,6 +3,10 @@ package com.redmond.ejercicioredmond.services;
 import com.redmond.ejercicioredmond.models.Empleado;
 import com.redmond.ejercicioredmond.repositories.EmpleadoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -25,6 +29,7 @@ public class EmpleadoService {
     }
 
     private Map<String,Integer> calcularCantidadBilletes(Double cantidad){
+        //Denominaciones podrian estar guardadas en una tabja de base de datos y ser consultadas en orden descendente
         ArrayList<Integer> denom= new ArrayList<Integer>(Arrays.asList(100, 50, 20, 10, 5, 2, 1));
         Map<String,Integer> res=new HashMap<>();
         Double resto=cantidad;
@@ -34,6 +39,18 @@ public class EmpleadoService {
             res.put(a.toString(), cociente);
         }
         return res;
+    }
+
+    public Map<String,Double> reporteSueldos(){
+        Map<String,Double> reporte=new HashMap<>(empleadoRepository.reporteSueldos());
+        Integer cantEmpleados= empleadoRepository.countEmpleados();
+        reporte.put("empleados", cantEmpleados.doubleValue());
+        return reporte;
+    }
+
+    public Page<Empleado> listaEmpleados(Integer page, Integer size){
+        Pageable pageable = PageRequest.of(page, size, Sort.by("nombre").ascending());
+        return empleadoRepository.findAll(pageable);
     }
 
 }
